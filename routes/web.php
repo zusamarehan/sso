@@ -17,6 +17,10 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::get('/sso', 'WorkOSController@sso')->name('sso');
+Route::get('/sso/callback', 'WorkOSController@callback')->name('sso.callback');
+Route::get('/sso/okta', 'WorkOSController@okta')->name('sso.okta.login');
+
 Auth::routes();
 
 Route::get('/home', 'HomeController@index')->name('home');
