@@ -66,6 +66,11 @@
                         </div>
                     </form>
                 </div>
+                <div class="card-footer">
+                    <a href="{{route('sso.okta.login')}}" class="border py-2 px-4">Okta</a>
+                    <a href="#" class="border py-2 px-4">Google</a>
+                    <a href="#" class="border py-2 px-4">Microsoft</a>
+                </div>
             </div>
         </div>
     </div>
