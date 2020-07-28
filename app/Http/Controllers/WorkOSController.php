@@ -28,7 +28,7 @@ class WorkOSController extends Controller
         $url = (new SSO())->getAuthorizationUrl(
             $domain,
             env('WORKOS_CALLBACK'),
-            ['domain' => request()->input('domain')],
+            ['domain' => $domain],
             $this->provider($provider) // Pass along provider if we don't have a domain
         );
 
@@ -40,15 +40,21 @@ class WorkOSController extends Controller
         return response()->json(json_decode($response->body(), true), 400);
     }
 
+    public function organization($email)
+    {
+        $domain = explode('@', $email)[1];
+
+        return Organization::query()
+            ->where('domain', $domain)
+            ->first();
+    }
+
     public function callback()
     {
         $profile = (new SSO())->getProfile(request()->input('code'))->toArray();
 
         if($profile) {
-            $state = json_decode(request()->input('state'), true);
-            $org = Organization::query()
-                ->where('domain', $state['domain'])
-                ->first();
+            $org = $this->organization($profile['email']);
 
             if($org) {
                 $user = User::query()
@@ -70,6 +76,7 @@ class WorkOSController extends Controller
                 if($user->is_blocked == 1) {
                     return response()->json(['message' => 'You have been blocked and cannot use the application anymore'], 422);
                 }
+
                 Auth::loginUsingId($user->id);
                 return redirect(RouteServiceProvider::HOME);
             }
