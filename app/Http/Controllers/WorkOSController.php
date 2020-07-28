@@ -7,23 +7,29 @@ use App\Providers\RouteServiceProvider;
 use App\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use WorkOS\Resource\ConnectionType;
 use WorkOS\SSO;
 
 class WorkOSController extends Controller
 {
-    public function sso()
+    public function provider($provider)
     {
-        Validator::make(request()->all(), [
-            'domain' => ['required']
-        ])->validate();
+        $workOS_connection = ConnectionType::GoogleOAuth;
+        if($provider == 'okta') $workOS_connection = null;
+        if ($provider == 'azure') $workOS_connection = ConnectionType::AzureSAML;
 
+        return $workOS_connection;
+    }
+
+    public function sso($provider)
+    {
+        $domain = request()->input('domain', null);
         $url = (new SSO())->getAuthorizationUrl(
-            request()->input('domain'),
+            $domain,
             env('WORKOS_CALLBACK'),
             ['domain' => request()->input('domain')],
-            null // Pass along provider if we don't have a domain
+            $this->provider($provider) // Pass along provider if we don't have a domain
         );
 
         $response = Http::get($url);
@@ -31,7 +37,7 @@ class WorkOSController extends Controller
             return redirect($url);
         }
 
-        return response()->json(['message' => 'Domain not associated'], 400);
+        return response()->json(json_decode($response->body(), true), 400);
     }
 
     public function callback()

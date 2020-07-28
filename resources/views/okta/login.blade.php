@@ -8,7 +8,7 @@
                     <div class="card-header">{{ __('Okta') }}</div>
 
                     <div class="card-body">
-                        <form method="GET" action="{{ route('sso') }}">
+                        <form method="GET" action="{{ route('sso', ['provider' => 'okta']) }}">
                             @csrf
 
                             <div class="form-group row">
